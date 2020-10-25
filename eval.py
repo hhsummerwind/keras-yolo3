@@ -50,7 +50,7 @@ def get_result():
     print("get result:-----------------------------")
     yolo = YOLO()
     val_path = '/data/datasets/tianji/hat/hat_val.txt'
-    dst_dir = '/data/models/hat/input608_box200/result'
+    dst_dir = '/data/models/hat/input608_box200_pretrain/result'
     f = open(val_path, 'r')
     for i, line in enumerate(f.readlines()):
         # if i == 107:

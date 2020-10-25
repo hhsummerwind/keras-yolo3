@@ -137,6 +137,10 @@ class MixupImage(BaseOperator):
             raise ValueError("beta shold be positive in {}".format(self))
 
     def _mixup_img(self, img1, img2, factor):
+        if len(img1.shape) == 2:
+            img1 = cv2.cvtColor(img1, cv2.COLOR_GRAY2RGB)
+        if len(img2.shape) == 2:
+            img2 = cv2.cvtColor(img2, cv2.COLOR_GRAY2RGB)
         h = max(img1.shape[0], img2.shape[0])
         w = max(img1.shape[1], img2.shape[1])
         img = np.zeros((h, w, img1.shape[2]), 'float32')
@@ -147,6 +151,10 @@ class MixupImage(BaseOperator):
         return img.astype('uint8')
 
     def _concat_mask(self, mask1, mask2, gt_score1, gt_score2):
+        if len(mask1.shape) == 2:
+            mask1 = cv2.cvtColor(mask1, cv2.COLOR_GRAY2RGB)
+        if len(mask2.shape) == 2:
+            mask2 = cv2.cvtColor(mask2, cv2.COLOR_GRAY2RGB)
         h = max(mask1.shape[0], mask2.shape[0])
         w = max(mask1.shape[1], mask2.shape[1])
         expand_mask1 = np.zeros((h, w, mask1.shape[2]), 'float32')

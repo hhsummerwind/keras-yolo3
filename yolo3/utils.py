@@ -33,7 +33,11 @@ def letterbox_image(image, size):
 def rand(a=0, b=1):
     return np.random.rand()*(b-a) + a
 
+<<<<<<< HEAD
 def get_random_data(annotation_line, input_shape, random=True, max_boxes=200, jitter=.3, hue=.1, sat=1.5, val=1.5, proc_img=True):
+=======
+def get_random_data(annotation_line, input_shape, random=True, max_boxes=20, jitter=.3, hue=.1, sat=1.5, val=1.5, proc_img=True):
+>>>>>>> e6598d13c703029b2686bc2eb8d5c09badf42992
     '''random preprocessing for real-time data augmentation'''
     line = annotation_line.split()
     image = Image.open(line[0])

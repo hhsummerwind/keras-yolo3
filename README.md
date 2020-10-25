@@ -20,7 +20,6 @@ v1.3|max box = 200,input = 608|/mnt/YP/gitlab/res/HuHui/safe_hat/v1.3|69.38|89.6
 v1.4|max box = 200,input = 608,在模型v1.2的基础上继续训练|/mnt/YP/gitlab/res/HuHui/safe_hat/v1.4|88.17|90.57|85.78
 
 
----
 ## Introduction
 
 A Keras implementation of YOLOv3 (Tensorflow backend) inspired by [allanzelener/YAD2K](https://github.com/allanzelener/YAD2K).

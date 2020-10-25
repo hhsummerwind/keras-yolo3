@@ -20,12 +20,21 @@ from keras.utils import multi_gpu_model
 
 class YOLO(object):
     _defaults = {
+# <<<<<<< HEAD
         "model_path": '/data/models/hat/input608_box200/trained_weights_final.h5',
         "anchors_path": 'model_data/yoloAnchors.txt',
         "classes_path": 'model_data/SaftyHatClasses.txt',
         "score" : 0.3,
         "iou" : 0.45,
         "model_image_size" : (608, 608),
+# =======
+#         "model_path": 'model_data/yolo.h5',
+#         "anchors_path": 'model_data/yolo_anchors.txt',
+#         "classes_path": 'model_data/coco_classes.txt',
+#         "score" : 0.3,
+#         "iou" : 0.45,
+#         "model_image_size" : (416, 416),
+# >>>>>>> e6598d13c703029b2686bc2eb8d5c09badf42992
         "gpu_num" : 1,
     }
 
@@ -136,8 +145,13 @@ class YOLO(object):
             score = out_scores[i]
 
             label = '{} {:.2f}'.format(predicted_class, score)
-            # draw = ImageDraw.Draw(image)
-            # label_size = draw.textsize(label, font)
+# <<<<<<< HEAD
+#             # draw = ImageDraw.Draw(image)
+#             # label_size = draw.textsize(label, font)
+# =======
+#             draw = ImageDraw.Draw(image)
+#             label_size = draw.textsize(label, font)
+# >>>>>>> e6598d13c703029b2686bc2eb8d5c09badf42992
 
             top, left, bottom, right = box
             top = max(0, np.floor(top + 0.5).astype('int32'))

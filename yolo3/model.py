@@ -188,7 +188,11 @@ def yolo_eval(yolo_outputs,
               anchors,
               num_classes,
               image_shape,
+<<<<<<< HEAD
               max_boxes=200,
+=======
+              max_boxes=20,
+>>>>>>> e6598d13c703029b2686bc2eb8d5c09badf42992
               score_threshold=.6,
               iou_threshold=.5):
     """Evaluate YOLO model on given input and return filtered boxes."""

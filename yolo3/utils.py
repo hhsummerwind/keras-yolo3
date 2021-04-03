@@ -1,11 +1,14 @@
 """Miscellaneous utility functions."""
 
 from functools import reduce
+import pdb
 
 from PIL import Image
 import numpy as np
 from matplotlib.colors import rgb_to_hsv, hsv_to_rgb
 Image.MAX_IMAGE_PIXELS = None
+
+from yolo3.transform import MixupImage
 
 def compose(*funcs):
     """Compose arbitrarily many functions, evaluated left to right.
@@ -34,8 +37,29 @@ def letterbox_image(image, size):
 def rand(a=0, b=1):
     return np.random.rand()*(b-a) + a
 
-def get_random_data(annotation_line, input_shape, random=True, max_boxes=300, jitter=.3, hue=.1, sat=1.5, val=1.5, proc_img=True, split_s=' '):
-    '''random preprocessing for real-time data augmentation'''
+
+def get_mixup_image(image, box, bool_mixup=True, merge_line=None):
+    iw, ih = image.size
+    if bool_mixup:
+        assert merge_line is not None
+        merge_line = merge_line.split()
+        merge_image = Image.open(merge_line[0])
+        merge_iw, merge_ih = image.size
+        merge_box = np.array([np.array(list(map(int,box.split(',')))) for box in merge_line[1:]])
+        sample = {'image': np.array(image), 'gt_bbox': box[:,:4], 'gt_class': box[:, 4], 'gt_score': np.ones(len(box)),
+                  'h': ih, 'w': iw,
+                  'mixup': {'image': np.array(merge_image), 'gt_bbox': merge_box[:,:4], 'gt_class': merge_box[:, 4],
+                            'gt_score': np.ones(len(merge_box)), 'h': merge_ih, 'w': merge_iw}}
+        minup = MixupImage()
+        out_sample = minup(sample)
+    else:
+        out_sample = {'image': np.array(image), 'gt_bbox': box[:,:4], 'gt_class': box[:, 4],
+                      'gt_score': np.ones(len(box)), 'h': ih, 'w': iw}
+    return out_sample
+
+
+def get_random_data(annotation_line, input_shape, random=True, max_boxes=200, jitter=.3, hue=.1, sat=1.5, val=1.5,
+                    proc_img=True, mixup=False, merge_line=None, split_s=' '):
     line = annotation_line.split(split_s)
     image = Image.open(line[0])
     iw, ih = image.size
@@ -67,8 +91,14 @@ def get_random_data(annotation_line, input_shape, random=True, max_boxes=300, ji
             box[:, [0,2]] = box[:, [0,2]]*scale + dx
             box[:, [1,3]] = box[:, [1,3]]*scale + dy
             box_data[:len(box)] = box
+            box_data = np.concatenate([box_data, np.ones(len(box))])
 
         return image_data, box_data
+
+    sample = get_mixup_image(image, box, mixup, merge_line)
+    image = Image.fromarray(sample['image'])
+    box = np.concatenate((sample['gt_bbox'], np.expand_dims(sample['gt_class'], 1), np.expand_dims(sample['gt_score'], 1)), axis=1)
+    iw, ih = sample['w'], sample['h']
 
     # resize image
     new_ar = w/h * rand(1-jitter,1+jitter)/rand(1-jitter,1+jitter)
@@ -107,7 +137,7 @@ def get_random_data(annotation_line, input_shape, random=True, max_boxes=300, ji
     image_data = hsv_to_rgb(x) # numpy array, 0 to 1
 
     # correct boxes
-    box_data = np.zeros((max_boxes,5))
+    box_data = np.zeros((max_boxes,6))
     if len(box)>0:
         np.random.shuffle(box)
         box[:, [0,2]] = box[:, [0,2]]*nw/iw + dx
@@ -121,5 +151,11 @@ def get_random_data(annotation_line, input_shape, random=True, max_boxes=300, ji
         box = box[np.logical_and(box_w>1, box_h>1)] # discard invalid box
         if len(box)>max_boxes: box = box[:max_boxes]
         box_data[:len(box)] = box
+    # import cv2
+    # tmp = (image_data * 255).astype(np.uint8)
+    # for s in box_data:
+    #     tmp = cv2.rectangle(tmp, (int(s[0]), int(s[1])),
+    #                         (int(s[2]), int(s[3])), (0, 0, 255), 2)
+    # cv2.imwrite('tmp.jpg', tmp[:,:,::-1])
 
     return image_data, box_data

@@ -166,7 +166,7 @@ class YOLO(object):
 
         end = timer()
         print(end - start)
-        return image
+        return image, out_boxes, out_scores, out_classes
 
     def close_session(self):
         self.sess.close()

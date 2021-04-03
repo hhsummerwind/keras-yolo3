@@ -2,6 +2,24 @@
 
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
 
+
+该项目用于安全帽佩戴检测，代码参考 https://github.com/qqwweee/keras-yolo3.git， 训练数据为自行收集和标注，共7582张，其中90%用于训练，10%用于验证。在验证集上的迭代过程如下表所示：
+
+* Number of detected objects per class
+hat: 989
+person: 10916
+
+parameters: score = 0.5, iou = 0.45
+
+version|参数设置|模型路径|mAP(%)|hat AP(%)|person AP(%)
+-|-|-|-|-|-
+v1.0||/mnt/YP/gitlab/res/HuHui/safe_hat/v1.0|50.78|67.24|34.33
+v1.1|原始代码重新训练|/mnt/YP/gitlab/res/HuHui/safe_hat/v1.1|61.86|87.61|36.12
+v1.2|max box = 200|/mnt/YP/gitlab/res/HuHui/safe_hat/v1.2|66.64|88.12|45.16
+v1.3|max box = 200,input = 608|/mnt/YP/gitlab/res/HuHui/safe_hat/v1.3|69.38|89.60|49.16
+v1.4|max box = 200,input = 608,在模型v1.2的基础上继续训练|/mnt/YP/gitlab/res/HuHui/safe_hat/v1.4|88.17|90.57|85.78
+
+
 ## Introduction
 
 A Keras implementation of YOLOv3 (Tensorflow backend) inspired by [allanzelener/YAD2K](https://github.com/allanzelener/YAD2K).

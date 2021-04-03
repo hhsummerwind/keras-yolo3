@@ -2,6 +2,8 @@ import sys
 import argparse
 from yolo import YOLO, detect_video
 from PIL import Image
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
 
 def detect_img(yolo):
     while True:
@@ -13,12 +15,36 @@ def detect_img(yolo):
             continue
         else:
             r_image = yolo.detect_image(image)
-            r_image.show()
+            # r_image.show()
+            r_image.save('tmp.jpg')
+    yolo.close_session()
+
+
+def detect_mask(yolo):
+    import os
+    import glob
+    img_dir = '/data/datasets/mask/FaceMaskDataset/val'
+    out_dir = '/data/datasets/mask/FaceMaskDataset/result'
+    for img in glob.glob(os.path.join(img_dir, '*')):
+        # img = input('Input image filename:')
+        try:
+            image = Image.open(img)
+        except:
+            print('Open Error! Try again!')
+            continue
+        else:
+            r_image = yolo.detect_image(image)
+            # r_image.show()
+            r_image.save(os.path.join(out_dir, os.path.basename(img)))
     yolo.close_session()
 
 FLAGS = None
 
 if __name__ == '__main__':
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True  # 不全部占满显存, 按需分配
+    sess = tf.Session(config=config)
+    set_session(tf.Session(config=config))
     # class YOLO defines the default value, so suppress any default here
     parser = argparse.ArgumentParser(argument_default=argparse.SUPPRESS)
     '''
@@ -45,14 +71,14 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
-        '--image', default=False, action="store_true",
+        '--image', default=True, action="store_true",
         help='Image detection mode, will ignore all positional arguments'
     )
     '''
     Command line positional arguments -- for video detection mode
     '''
     parser.add_argument(
-        "--input", nargs='?', type=str,required=False,default='./path2your_video',
+        "--input", nargs='?', type=str,required=False,default='/data/datasets/tianji/baokong/data/val/gun/1.jpg',
         help = "Video input path"
     )
 
@@ -71,6 +97,7 @@ if __name__ == '__main__':
         if "input" in FLAGS:
             print(" Ignoring remaining command line arguments: " + FLAGS.input + "," + FLAGS.output)
         detect_img(YOLO(**vars(FLAGS)))
+        # detect_mask(YOLO(**vars(FLAGS)))
     elif "input" in FLAGS:
         detect_video(YOLO(**vars(FLAGS)), FLAGS.input, FLAGS.output)
     else:

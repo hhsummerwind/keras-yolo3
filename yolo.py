@@ -20,13 +20,14 @@ from keras.utils import multi_gpu_model
 
 class YOLO(object):
     _defaults = {
-        "model_path": 'model_data/yolo.h5',
-        "anchors_path": 'model_data/yolo_anchors.txt',
-        "classes_path": 'model_data/coco_classes.txt',
+        "model_path": '/data/models/panda/yolov3_6000/ep024-loss249.389-val_loss262.885.h5',
+        "anchors_path": 'panda/yolo_anchors.txt',
+        "classes_path": 'panda/class_names.txt',
         "score" : 0.3,
         "iou" : 0.45,
-        "model_image_size" : (416, 416),
+        "model_image_size" : (1280, 1280),
         "gpu_num" : 1,
+        "max_boxes": 500
     }
 
     @classmethod
@@ -95,7 +96,7 @@ class YOLO(object):
         if self.gpu_num>=2:
             self.yolo_model = multi_gpu_model(self.yolo_model, gpus=self.gpu_num)
         boxes, scores, classes = yolo_eval(self.yolo_model.output, self.anchors,
-                len(self.class_names), self.input_image_shape,
+                len(self.class_names), self.input_image_shape,max_boxes=self.max_boxes,
                 score_threshold=self.score, iou_threshold=self.iou)
         return boxes, scores, classes
 
@@ -128,7 +129,7 @@ class YOLO(object):
 
         font = ImageFont.truetype(font='font/FiraMono-Medium.otf',
                     size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
-        thickness = (image.size[0] + image.size[1]) // 300
+        thickness = max((image.size[0] + image.size[1]) // 600, 1)
 
         for i, c in reversed(list(enumerate(out_classes))):
             predicted_class = self.class_names[c]
@@ -136,6 +137,7 @@ class YOLO(object):
             score = out_scores[i]
 
             label = '{} {:.2f}'.format(predicted_class, score)
+            print(label)
             draw = ImageDraw.Draw(image)
             label_size = draw.textsize(label, font)
 
@@ -156,10 +158,10 @@ class YOLO(object):
                 draw.rectangle(
                     [left + i, top + i, right - i, bottom - i],
                     outline=self.colors[c])
-            draw.rectangle(
-                [tuple(text_origin), tuple(text_origin + label_size)],
-                fill=self.colors[c])
-            draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+            # draw.rectangle(
+            #     [tuple(text_origin), tuple(text_origin + label_size)],
+            #     fill=self.colors[c])
+            # draw.text(text_origin, label, fill=(0, 0, 0), font=font)
             del draw
 
         end = timer()

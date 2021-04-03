@@ -2,6 +2,8 @@
 Retrain the YOLO model for your own dataset.
 """
 
+import os
+import glob
 import numpy as np
 import keras.backend as K
 from keras.layers import Input, Lambda
@@ -12,9 +14,16 @@ from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, Ear
 from yolo3.model import preprocess_true_boxes, yolo_body, tiny_yolo_body, yolo_loss
 from yolo3.utils import get_random_data
 
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
+config = tf.ConfigProto()
+config.gpu_options.allow_growth=True   #不全部占满显存, 按需分配
+sess = tf.Session(config=config)
+set_session(tf.Session(config=config))
+
 
 def _main():
-    annotation_path = 'train.txt'
+    annotation_paths = glob.glob(os.path.join('voc', '*_train.txt')) + glob.glob(os.path.join('voc', '*_val.txt'))
     log_dir = 'logs/000/'
     classes_path = 'model_data/voc_classes.txt'
     anchors_path = 'model_data/yolo_anchors.txt'
@@ -39,8 +48,10 @@ def _main():
     early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1)
 
     val_split = 0.1
-    with open(annotation_path) as f:
-        lines = f.readlines()
+    lines = []
+    for annotation_path in annotation_paths:
+        with open(annotation_path) as f:
+            lines += f.readlines()
     np.random.seed(10101)
     np.random.shuffle(lines)
     np.random.seed(None)

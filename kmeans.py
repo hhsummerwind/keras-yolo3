@@ -5,7 +5,7 @@ class YOLO_Kmeans:
 
     def __init__(self, cluster_number, filename):
         self.cluster_number = cluster_number
-        self.filename = "2012_train.txt"
+        self.filename = filename
 
     def iou(self, boxes, clusters):  # 1 box -> k clusters
         n = boxes.shape[0]
@@ -57,8 +57,8 @@ class YOLO_Kmeans:
 
         return clusters
 
-    def result2txt(self, data):
-        f = open("yolo_anchors.txt", 'w')
+    def result2txt(self, data, out_anchors):
+        f = open(out_anchors, 'w')
         row = np.shape(data)[0]
         for i in range(row):
             if i == 0:
@@ -68,34 +68,52 @@ class YOLO_Kmeans:
             f.write(x_y)
         f.close()
 
-    def txt2boxes(self):
+    def txt2boxes(self, split_s=' '):
+        #pdb.set_trace()
         f = open(self.filename, 'r')
         dataSet = []
-        for line in f:
-            infos = line.split(" ")
+        for j, line in enumerate(f):
+            # print('j:',j)
+            infos = line.strip().split(split_s)
             length = len(infos)
             for i in range(1, length):
+                # print('\ti:',i)
                 width = int(infos[i].split(",")[2]) - \
                     int(infos[i].split(",")[0])
                 height = int(infos[i].split(",")[3]) - \
                     int(infos[i].split(",")[1])
                 dataSet.append([width, height])
+
+                # if int(infos[i].split(",")[4]) != 2:
+                #     if height < 10 or width < 10:
+                #         print(i, j, infos[0], infos[i], width, height)
+                # if width > 600 and height > 600:
+                #     pass
+                # elif width < 400 and height < 400:
+                #     pass
+                # elif width > 200 and height > 200 and width < 8000 and height < 8000:
+                #     pass
+                # else:
+                #     if width < 50 or height < 50:
+                #         print(i, j, infos[0], infos[i], width, height)
         result = np.array(dataSet)
         f.close()
         return result
 
-    def txt2clusters(self):
-        all_boxes = self.txt2boxes()
+    def txt2clusters(self, out_anchors, split_s=' '):
+        all_boxes = self.txt2boxes(split_s)
         result = self.kmeans(all_boxes, k=self.cluster_number)
         result = result[np.lexsort(result.T[0, None])]
-        self.result2txt(result)
+        self.result2txt(result, out_anchors)
         print("K anchors:\n {}".format(result))
         print("Accuracy: {:.2f}%".format(
             self.avg_iou(all_boxes, result) * 100))
 
 
 if __name__ == "__main__":
+    import pdb
     cluster_number = 9
-    filename = "2012_train.txt"
+    filename = "panda/split3_annotations.txt"
+    out_anchors = 'panda/split3_anchors.txt'
     kmeans = YOLO_Kmeans(cluster_number, filename)
-    kmeans.txt2clusters()
+    kmeans.txt2clusters(out_anchors, '\t')
